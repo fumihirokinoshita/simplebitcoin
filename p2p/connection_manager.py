@@ -155,12 +155,12 @@ class ConnectionManager:
 
 
         # 新たに接続されたCoreノードをリストに追加する。クラスの外からは利用しない想定
-        def __add_peer(self):
+        def __add_peer(self, peer):
             print('Adding peer: ', peer)
             self.core_node_set.add((peer))
 
         # 離脱したCoreノードをリストから削除する。クラスの外からは利用しない想定
-        def __remove_peer(self):
+        def __remove_peer(self, peer):
             if peer in self.core_node_set:
                 print('Removing peer:', peer)
                 self.core_node_set.remove(peer)

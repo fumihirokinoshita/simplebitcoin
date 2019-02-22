@@ -1,7 +1,7 @@
 from distutils.version import StrictVersion
 import json
 
-PROTOCOL_NAME = 'simple-bitcoin_protocl'
+PROTOCOL_NAME = 'simple-bitcoin_protocol'
 MY_VERSION = '0.1.0'
 
 MSG_ADD = 0
