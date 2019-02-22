@@ -15,7 +15,7 @@ class ServerCore:
         self.my_ip = self.__get_myip()
         print('Server IP address is set to ... ', self.my_ip)
         self.my_port = my_port
-        self.com = ConnectionManager(self.my_ip, self.my_port)
+        self.cm = ConnectionManager(self.my_ip, self.my_port)
         self.core_node_host = core_node_host
         self.core_node_port = core_node_port
 

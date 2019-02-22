@@ -1,4 +1,10 @@
-from message_manager import MessageManager
+import socket
+import threading
+import pickle
+import codecs
+from concurrent.futures import ThreadPoolExecutor
+
+from .message_manager import MessageManager
 from .core_node_list import CoreNodeList
 
 PING_INTERVAL = 1800 # 30分
@@ -154,60 +160,60 @@ class ConnectionManager:
             print('Unexpected status', status)
 
 
-        # 新たに接続されたCoreノードをリストに追加する。クラスの外からは利用しない想定
-        def __add_peer(self, peer):
-            print('Adding peer: ', peer)
-            self.core_node_set.add((peer))
+    # 新たに接続されたCoreノードをリストに追加する。クラスの外からは利用しない想定
+    def __add_peer(self, peer):
+        print('Adding peer: ', peer)
+        self.core_node_set.add((peer))
 
-        # 離脱したCoreノードをリストから削除する。クラスの外からは利用しない想定
-        def __remove_peer(self, peer):
-            if peer in self.core_node_set:
-                print('Removing peer:', peer)
-                self.core_node_set.remove(peer)
-                print('Current Core list: ', self.core_node_set)
+    # 離脱したCoreノードをリストから削除する。クラスの外からは利用しない想定
+    def __remove_peer(self, peer):
+        if peer in self.core_node_set:
+            print('Removing peer:', peer)
+            self.core_node_set.remove(peer)
+            print('Current Core list: ', self.core_node_set)
 
-        # 接続されているCoreノードすべての接続状況確認を行う。クラスの外からは利用しない想定
-        def __check_peers_connection(self):
-            """
-            接続されているCoreノードすべての接続状況確認を行う。クラスの外からは利用しない想定
-            この確認処理は定期的に実行sれる
-            """
-            print('check_peers_connection was called')
-            current_core_list = self.core_node_set.get_list()
-            changed = False
-            dead_c_node_set = list(filter(lambda p: not self.__is_alive(p), current_core_list))
-            if dead_c_node_set:
-                changed = True
-                print('Removing ', dead_c_node_set)
-                current_core_list = current_core_list - set(dead_c_node_set)
-                self.core_node_set.overwrite(current_core_list)
+    # 接続されているCoreノードすべての接続状況確認を行う。クラスの外からは利用しない想定
+    def __check_peers_connection(self):
+        """
+        接続されているCoreノードすべての接続状況確認を行う。クラスの外からは利用しない想定
+        この確認処理は定期的に実行sれる
+        """
+        print('check_peers_connection was called')
+        current_core_list = self.core_node_set.get_list()
+        changed = False
+        dead_c_node_set = list(filter(lambda p: not self.__is_alive(p), current_core_list))
+        if dead_c_node_set:
+            changed = True
+            print('Removing ', dead_c_node_set)
+            current_core_list = current_core_list - set(dead_c_node_set)
+            self.core_node_set.overwrite(current_core_list)
 
-            current_core_list = self.core_node_set.get_list()
-            print('current core node list:', current_core_list)
-            # 変更があったとだけブロードキャストで通知する
-            if changed:
-                cl = pickle.dumps(current_core_list, 0).decode()
-                msg = self.mm.build(MSG_CORE_LIST, self.port, cl)
-                self.send_msg_to_all_peer(msg)
+        current_core_list = self.core_node_set.get_list()
+        print('current core node list:', current_core_list)
+        # 変更があったとだけブロードキャストで通知する
+        if changed:
+            cl = pickle.dumps(current_core_list, 0).decode()
+            msg = self.mm.build(MSG_CORE_LIST, self.port, cl)
+            self.send_msg_to_all_peer(msg)
 
-            self.ping_timer = threading.Timer(PING_INTERVAL, self.__check_peers_connection)
-            self.ping_timer.start()
+        self.ping_timer = threading.Timer(PING_INTERVAL, self.__check_peers_connection)
+        self.ping_timer.start()
 
-        def __is_alive(self, target):
-            """
-            有効ノード確認メッセージの送信
+    def __is_alive(self, target):
+        """
+        有効ノード確認メッセージの送信
 
-            param:
-                target : 有効ノード確認メッセージの送り先となるノードの接続情報
-                        （IPアドレスとポート番号）
-            """
-            try:
-                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                s.connect((target))
-                msg_type = MSG_TYPE
-                msg = self.mm.build(msg_type)
-                s.sendall(msg.encode('utf-8'))
-                s.close()
-                return True
-            except OSError:
-                return False
+        param:
+            target : 有効ノード確認メッセージの送り先となるノードの接続情報
+                    （IPアドレスとポート番号）
+        """
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect((target))
+            msg_type = MSG_TYPE
+            msg = self.mm.build(msg_type)
+            s.sendall(msg.encode('utf-8'))
+            s.close()
+            return True
+        except OSError:
+            return False
