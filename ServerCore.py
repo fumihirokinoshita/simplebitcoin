@@ -1,3 +1,7 @@
+import socket
+
+from p2p.connection_manager import ConnectionManager
+
 STATE_INIT = 0
 STATE_STANDBY = 1
 STATE_CONNECTED_TO_NETWORK = 2

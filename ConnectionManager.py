@@ -1,19 +1,25 @@
 from message_manager import MessageManager
+from .core_node_list import CoreNodeList
 
 PING_INTERVAL = 1800 # 30分
 
 
 class ConnectionManager:
-    def __init__(self):
+    def __init__(self, host, my_port):
         print('Initializing ConnectionManager...')
         self.host = host
         self.port = my_port
-        self.core_node_set = set()
+        self.core_node_set = CoreNodeList()
         self.__add_peer((host, my_port))
         self.mm = MessageManager()
 
     # 待受を開始する際に呼び出される (ServerCore向け)
     def start(self):
+        t = threading.Thread(target=self.__wait_for_access)
+        t.start()
+        
+        self.ping_timer = threading.Timer(PING_INTERVAL, self.__check_peers_connection)
+        self.ping_timer.start()
 
     def __wait_for_access(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -34,9 +40,19 @@ class ConnectionManager:
 
     # ユーザが指定した既知のCoreノードへの接続（ServerCore向け）
     def join_network(self):
+        self.my_c_host = host
+        self.my_c_port = port
+        self.__connect_to_P2PNW(host, port)
+
+    def __connect_to_P2PNW(self, host, port):
+        s = socket.socket(socktet.AF_INET, socket.SOCK_STREAM)
+        s.connect((host, port))
+        msg = self.mm.build(MSG_ADD, self.port)
+        s.sendall(msg.encode('utf-8'))
+        s.close()
 
     # 指定されたノードに対してメッセージを送信する
-    def send_msg(self):
+    def send_msg(self, peer, msg):
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect((peer))
@@ -48,15 +64,26 @@ class ConnectionManager:
 
     # Coreノードリストに登録されているすべてのノードに対して
     # 同じメッセージをブロードキャストする
-    def send_msg_to_all_peer(self):
+    def send_msg_to_all_peer(self, msg):
         print('send_msg_to_all_peer was called! ')
-        for peer in self.core_node_set:
+        current_list = self.core_node_set.get_list()
+        for peer in current_list:
             if peer != (self.host, self.port):
                 print('message will be sent to ...', peer)
                 self.send_msg(peer, msg)
 
     # 終了前の処理としてソケットを閉じる（ServerCore向け）
     def connection_close(self):
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((self.host, self.port))
+        self.socket.close()
+        s.close()
+        # 接続確認のスレッドの停止
+        self.ping_timer.cancel()
+        # 離脱要求の送信
+        msg = self.mm.build(MSG_REMOVE, self.port)
+        self.send_msg((self.my_c_host, self.my_c_port), msg)
+    
 
     # 受信したメッセージを確認して、内容に応じた処理を行う。クラスの外からは利用しない想定
     def __handle_message(self, params):
@@ -85,18 +112,18 @@ class ConnectionManager:
             return
         elif status == ('ok', OK_WITHOUT_PAYLOAD):
             if cmd == MSG_ADD:
-                print('ADD nod request was received!!')
+                print('ADD node request was received!!')
                 self.__add_peer((addr[0], peer_port))
                 if(addr[0], peer_port) == (self.host, self.port):
                     return
                 else:
-                    cl = pickle.dumps(self.core_node_set, 0).decode()
+                    cl = pickle.dumps(self.core_node_set.get_list(), 0).decode()
                     msg = self.mm.build(MSG_CORE_LIST, self.port, cl)
                     self.send_msg_to_all_peer(msg)
             elif cmd == MSG_REMOVE:
                 print('REMOVE request was received!! from', addr[0], peer_port)
                 self.__remove_peer((addr[0], peer_port))
-                cl = pickle.dumps(self.core_node_set, 0).decode()
+                cl = pickle.dumps(self.core_node_set.get_list(), 0).decode()
                 msg = self.mm.build(MSG_CORE_LIST, self.port, cl)
                 self.send_msg_to_all_peer(msg)
             elif cmd == MSG_PING:
@@ -146,21 +173,24 @@ class ConnectionManager:
             この確認処理は定期的に実行sれる
             """
             print('check_peers_connection was called')
+            current_core_list = self.core_node_set.get_list()
             changed = False
-            dead_c_node_set = list(filter(lambda p: not self.__is_alive(p), self.core_node_set))
+            dead_c_node_set = list(filter(lambda p: not self.__is_alive(p), current_core_list))
             if dead_c_node_set:
                 changed = True
                 print('Removing ', dead_c_node_set)
-                self.core_node_set = self.core_node_set - set(dead_c_node_set)
+                current_core_list = current_core_list - set(dead_c_node_set)
+                self.core_node_set.overwrite(current_core_list)
 
-            print('current core node list:', self.core_node_list)
+            current_core_list = self.core_node_set.get_list()
+            print('current core node list:', current_core_list)
             # 変更があったとだけブロードキャストで通知する
             if changed:
-                cl = pickle.dumps(self.core_node_set, 0).decode()
+                cl = pickle.dumps(current_core_list, 0).decode()
                 msg = self.mm.build(MSG_CORE_LIST, self.port, cl)
                 self.send_msg_to_all_peer(msg)
 
-            self.ping_timer = threading.Timer(PING_INTERVAL, SELF.__check_peers_connection)
+            self.ping_timer = threading.Timer(PING_INTERVAL, self.__check_peers_connection)
             self.ping_timer.start()
 
         def __is_alive(self, target):
