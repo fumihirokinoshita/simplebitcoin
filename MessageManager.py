@@ -22,12 +22,13 @@ class MessageManager:
     def __init__(self):
         print('Initializing MessageManager...')
 
-    def build(self, msg_type, payload=None):
+    def build(self, msg_type, my_port=50082, payload=None):
 
         message = {
             'protocol': PROTOCOL_NAME,
             'version': MY_VERSION,
             'msg_type': msg_type,
+            'my_port': my_port
         }
 
         if payload is not None:
@@ -41,13 +42,14 @@ class MessageManager:
         msg_ver = StrictVersion(msg['version'])
 
         cmd = msg['msg_type']
+        my_port = msg['my_port']
         payload = msg['payload']
 
         if msg['protocol'] != PROTOCOL_NAME:
-            return ('error', ERR_PROTOCOL_UNMATCH, None, None)
+            return ('error', ERR_PROTOCOL_UNMATCH, None, None, None)
         elif msg_ver > StrictVersion(MY_VERSION):
-            return ('error', ERR_VERSION_UMMATCH, None, None)
+            return ('error', ERR_VERSION_UMMATCH, None, None, None)
         elif cmd == MSG_CORE_LEST:
-            return ('ok', OK_WITH_PAYLOAD, cmd, payload)
+            return ('ok', OK_WITH_PAYLOAD, cmd, my_port, payload)
         else:
-            return ('ok', OK_WTHOUT_PYLOAD, cmd, None)
+            return ('ok', OK_WTHOUT_PYLOAD, cmd, my_port, None)
