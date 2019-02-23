@@ -5,7 +5,21 @@ import codecs
 from concurrent.futures import ThreadPoolExecutor
 
 from .core_node_list import CoreNodeList
-from .message_manager import MessageManager
+from .message_manager import (
+    MessageManager,
+    MSG_ADD,
+    MSG_REMOVE,
+    MSG_CORE_LIST,
+    MSG_REQUEST_CORE_LIST,
+    MSG_PING,
+    MSG_ADD_AS_EDGE,
+    MSG_REMOVE_EDGE,
+
+    ERR_PROTOCOL_UNMATCH,
+    ERR_VERSION_UNMATCH,
+    OK_WITH_PAYLOAD,
+    OK_WITHOUT_PAYLOAD,
+)
 
 PING_INTERVAL = 1800 # 30分
 
@@ -210,7 +224,7 @@ class ConnectionManager:
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect((target))
-            msg_type = MSG_TYPE
+            msg_type = MSG_PING
             msg = self.mm.build(msg_type)
             s.sendall(msg.encode('utf-8'))
             s.close()
