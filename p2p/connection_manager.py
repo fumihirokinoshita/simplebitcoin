@@ -252,12 +252,14 @@ class ConnectionManager:
             return False
 
     def __add_edge_node(self, edge):
+        print('cm __add_edge_node')
         """
         Edgeノードをリストに追加する。クラスの外からは利用しない想定
         """
         self.edge_node_set.add((edge))
 
     def __remove_edge_node(self, edge):
+        print('cm __remove_edge_node')
         """
         離脱したと判断されるEdgeノートをリストから削除する。クラスの外からは利用しない想定
         """
