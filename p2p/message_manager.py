@@ -48,8 +48,8 @@ class MessageManager:
         if msg['protocol'] != PROTOCOL_NAME:
             return ('error', ERR_PROTOCOL_UNMATCH, None, None, None)
         elif msg_ver > StrictVersion(MY_VERSION):
-            return ('error', ERR_VERSION_UMMATCH, None, None, None)
-        elif cmd == MSG_CORE_LEST:
+            return ('error', ERR_VERSION_UNMATCH, None, None, None)
+        elif cmd == MSG_CORE_LIST:
             return ('ok', OK_WITH_PAYLOAD, cmd, my_port, payload)
         else:
-            return ('ok', OK_WTHOUT_PYLOAD, cmd, my_port, None)
+            return ('ok', OK_WITHOUT_PAYLOAD, cmd, my_port, None)
