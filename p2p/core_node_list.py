@@ -36,11 +36,14 @@ class CoreNodeList:
             print('core node list will be going to overwrite')
             self.list = new_list
             print('Current Core list: ', self.list)
-
-        
+      
     def get_list(self):
         print('cnl def get_list')
         """
         現在接続状態にあるPeerの一覧を返却する
         """
         return self.list
+
+    def get_c_node_info(self):
+        return list(self.list)[0]
+

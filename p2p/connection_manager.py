@@ -162,6 +162,13 @@ class ConnectionManager:
                 cl = pickle.dumps(self.core_node_set, 0).decode()
                 msg = self.mm.build(MSG_CORE_LIST, self.port, cl)
                 self.send_msg((addr[0], peer_port), cmd)
+            elif cmd == MSG_ADD_AS_EDGE:
+                self.__add_edge_node((addr[0], peer_port))
+                cl = pickle.dumps(self.core_node_set.get_list(), 0).decode()
+                msg = self.mm.build(MSG_CORE_LIST, self.port, cl)
+                self.send_msg((addr[0], peer_port), msg)
+            elif cmd == MSG_REMOVE_EDGE:
+                self.__remove_edge_node((addr[0], peer_port))
             else:
                 print('received unknown command', cmd)
                 return
@@ -243,3 +250,15 @@ class ConnectionManager:
             return True
         except OSError:
             return False
+
+    def __add_edge_node(self, edge):
+        """
+        Edgeノードをリストに追加する。クラスの外からは利用しない想定
+        """
+        self.edge_node_set.add((edge))
+
+    def __remove_edge_node(self, edge):
+        """
+        離脱したと判断されるEdgeノートをリストから削除する。クラスの外からは利用しない想定
+        """
+        self.edge_node_set.remove(edge)
