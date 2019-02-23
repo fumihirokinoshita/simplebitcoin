@@ -24,9 +24,9 @@ class ServerCore:
         self.cm.start()
 
     def join_network(self):
-        if self.central_host is not None:
+        if self.core_node_host is not None:
             self.server_state = STATE_CONNECTED_TO_NETWORK
-            self.cm.join_network(self.core_node_host, self.core_node_port)
+            self.cm.join_network((self.core_node_host, self.core_node_port))
         else:
             print('This sever is running as Genesis Core Node...')
 

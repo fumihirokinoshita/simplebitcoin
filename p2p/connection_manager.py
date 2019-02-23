@@ -4,8 +4,8 @@ import pickle
 import codecs
 from concurrent.futures import ThreadPoolExecutor
 
-from .message_manager import MessageManager
 from .core_node_list import CoreNodeList
+from .message_manager import MessageManager
 
 PING_INTERVAL = 1800 # 30分
 
@@ -45,13 +45,13 @@ class ConnectionManager:
             executor.submit(self.__handle_message, params)
 
     # ユーザが指定した既知のCoreノードへの接続（ServerCore向け）
-    def join_network(self):
+    def join_network(self, host, port):
         self.my_c_host = host
         self.my_c_port = port
         self.__connect_to_P2PNW(host, port)
 
     def __connect_to_P2PNW(self, host, port):
-        s = socket.socket(socktet.AF_INET, socket.SOCK_STREAM)
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((host, port))
         msg = self.mm.build(MSG_ADD, self.port)
         s.sendall(msg.encode('utf-8'))
