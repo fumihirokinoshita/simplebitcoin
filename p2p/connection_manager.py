@@ -26,6 +26,7 @@ PING_INTERVAL = 1800 # 30分
 
 class ConnectionManager:
     def __init__(self, host, my_port):
+        print('cm def __init__')
         print('Initializing ConnectionManager...')
         self.host = host
         self.port = my_port
@@ -35,6 +36,7 @@ class ConnectionManager:
 
     # 待受を開始する際に呼び出される (ServerCore向け)
     def start(self):
+        print('cm def start')
         t = threading.Thread(target=self.__wait_for_access)
         t.start()
         
@@ -42,6 +44,7 @@ class ConnectionManager:
         self.ping_timer.start()
 
     def __wait_for_access(self):
+        print('cm def __wait_for_access')
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.bind((self.host, self.port))
         self.socket.listen(0)
@@ -60,11 +63,13 @@ class ConnectionManager:
 
     # ユーザが指定した既知のCoreノードへの接続（ServerCore向け）
     def join_network(self, host, port):
+        print('cm join_network')
         self.my_c_host = host
         self.my_c_port = port
         self.__connect_to_P2PNW(host, port)
 
     def __connect_to_P2PNW(self, host, port):
+        print('cm def __connect_to_P2PNW')
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((host, port))
         msg = self.mm.build(MSG_ADD, self.port)
@@ -73,6 +78,7 @@ class ConnectionManager:
 
     # 指定されたノードに対してメッセージを送信する
     def send_msg(self, peer, msg):
+        print('cm def send_msg')
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect((peer))
@@ -85,7 +91,7 @@ class ConnectionManager:
     # Coreノードリストに登録されているすべてのノードに対して
     # 同じメッセージをブロードキャストする
     def send_msg_to_all_peer(self, msg):
-        print('send_msg_to_all_peer was called! ')
+        print('cm send_msg_to_all_peer was called! ')
         current_list = self.core_node_set.get_list()
         for peer in current_list:
             if peer != (self.host, self.port):
@@ -94,6 +100,7 @@ class ConnectionManager:
 
     # 終了前の処理としてソケットを閉じる（ServerCore向け）
     def connection_close(self):
+        print('cm def connection_close')
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((self.host, self.port))
         self.socket.close()
@@ -107,6 +114,7 @@ class ConnectionManager:
 
     # 受信したメッセージを確認して、内容に応じた処理を行う。クラスの外からは利用しない想定
     def __handle_message(self, params):
+        print('cm def __handle_message')
 
         soc, addr, data_sum = params
 
@@ -176,11 +184,13 @@ class ConnectionManager:
 
     # 新たに接続されたCoreノードをリストに追加する。クラスの外からは利用しない想定
     def __add_peer(self, peer):
+        print('cm def __add_peer')
         print('Adding peer: ', peer)
         self.core_node_set.add((peer))
 
     # 離脱したCoreノードをリストから削除する。クラスの外からは利用しない想定
     def __remove_peer(self, peer):
+        print('cm __remove_peer')
         if peer in self.core_node_set:
             print('Removing peer:', peer)
             self.core_node_set.remove(peer)
@@ -188,6 +198,7 @@ class ConnectionManager:
 
     # 接続されているCoreノードすべての接続状況確認を行う。クラスの外からは利用しない想定
     def __check_peers_connection(self):
+        print('cm def __check_peers_connection')
         """
         接続されているCoreノードすべての接続状況確認を行う。クラスの外からは利用しない想定
         この確認処理は定期的に実行sれる
@@ -214,6 +225,7 @@ class ConnectionManager:
         self.ping_timer.start()
 
     def __is_alive(self, target):
+        print('cm def __is_alive')
         """
         有効ノード確認メッセージの送信
 

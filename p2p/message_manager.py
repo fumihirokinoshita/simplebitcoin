@@ -20,9 +20,11 @@ OK_WITHOUT_PAYLOAD = 3
 
 class MessageManager:
     def __init__(self):
+        print('mm def __init__')
         print('Initializing MessageManager...')
 
     def build(self, msg_type, my_port=50082, payload=None):
+        print('mm def build')
 
         message = {
             'protocol': PROTOCOL_NAME,
@@ -37,13 +39,14 @@ class MessageManager:
         return json.dumps(message)
 
     def parse(self, msg):
+        print('mm def parse')
 
         msg = json.loads(msg)
         msg_ver = StrictVersion(msg['version'])
 
-        cmd = msg['msg_type']
-        my_port = msg['my_port']
-        payload = msg['payload']
+        cmd = msg.get('msg_type')
+        my_port = msg.get('my_port')
+        payload = msg.get('payload')
 
         if msg['protocol'] != PROTOCOL_NAME:
             return ('error', ERR_PROTOCOL_UNMATCH, None, None, None)

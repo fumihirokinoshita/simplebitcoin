@@ -10,6 +10,7 @@ STATE_SHUTTING_DOWN = 3
 
 class ServerCore:
     def __init__(self, my_port=50082, core_node_host=None, core_node_port=None):
+        print('sc def __init__')
         self.server_state = STATE_INIT
         print('Initializing server...')
         self.my_ip = self.__get_myip()
@@ -20,10 +21,12 @@ class ServerCore:
         self.core_node_port = core_node_port
 
     def start(self):
+        print('sc def start')
         self.server_state = STATE_STANDBY
         self.cm.start()
 
     def join_network(self):
+        print('sc def join_network')
         if self.core_node_host is not None:
             self.server_state = STATE_CONNECTED_TO_NETWORK
             self.cm.join_network(self.core_node_host, self.core_node_port)
@@ -31,14 +34,17 @@ class ServerCore:
             print('This sever is running as Genesis Core Node...')
 
     def shutdown(self):
+        print('sc def shutdown')
         self.server_state = STATE_SHUTTING_DOWN
         print('Shutdown server...')
         self.cm.connection_close()
 
     def get_my_current_state(self):
+        print('sc def get_my_current_state')
         return self.server_state
 
     def __get_myip(self):
+        print('sc def __get_myip')
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(('8.8.8.8', 80))
         return s.getsockname()[0]
