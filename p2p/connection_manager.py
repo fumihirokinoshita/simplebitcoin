@@ -187,19 +187,33 @@ class ConnectionManager:
         else:
             print('Unexpected status', status)
 
-
-    # 新たに接続されたCoreノードをリストに追加する。クラスの外からは利用しない想定
     def __add_peer(self, peer):
+    # 新たに接続されたCoreノードをリストに追加する。クラスの外からは利用しない想定
         print('cm def __add_peer')
         self.core_node_set.add((peer))
 
-    # 離脱したCoreノードをリストから削除する。クラスの外からは利用しない想定
+    def __add_edge_node(self, edge):
+        print('cm __add_edge_node')
+        """
+        Edgeノードをリストに追加する。クラスの外からは利用しない想定
+        """
+        self.edge_node_set.add((edge))
+
+    
     def __remove_peer(self, peer):
+    # 離脱したCoreノードをリストから削除する。クラスの外からは利用しない想定
         print('cm __remove_peer')
         if peer in self.core_node_set:
             print('Removing peer:', peer)
             self.core_node_set.remove(peer)
             print('Current Core list: ', self.core_node_set)
+
+    def __remove_edge_node(self, edge):
+        print('cm __remove_edge_node')
+        """
+        離脱したと判断されるEdgeノートをリストから削除する。クラスの外からは利用しない想定
+        """
+        self.edge_node_set.remove(edge)
 
     # 接続されているCoreノードすべての接続状況確認を行う。クラスの外からは利用しない想定
     def __check_peers_connection(self):
@@ -248,17 +262,3 @@ class ConnectionManager:
             return True
         except OSError:
             return False
-
-    def __add_edge_node(self, edge):
-        print('cm __add_edge_node')
-        """
-        Edgeノードをリストに追加する。クラスの外からは利用しない想定
-        """
-        self.edge_node_set.add((edge))
-
-    def __remove_edge_node(self, edge):
-        print('cm __remove_edge_node')
-        """
-        離脱したと判断されるEdgeノートをリストから削除する。クラスの外からは利用しない想定
-        """
-        self.edge_node_set.remove(edge)
