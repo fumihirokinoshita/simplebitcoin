@@ -27,6 +27,7 @@ class ServerCore:
 
     def join_network(self):
         print('sc def join_network')
+        # ここの条件分岐は昨日していなかった。
         if self.core_node_host is not None:
             self.server_state = STATE_CONNECTED_TO_NETWORK
             self.cm.join_network(self.core_node_host, self.core_node_port)

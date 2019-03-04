@@ -43,38 +43,12 @@ class ConnectionManager:
         self.ping_timer = threading.Timer(PING_INTERVAL, self.__check_peers_connection)
         self.ping_timer.start()
 
-    def __wait_for_access(self):
-        print('cm def __wait_for_access')
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.bind((self.host, self.port))
-        self.socket.listen(0)
-
-        executor = ThreadPoolExecutor(max_workers=10)
-
-        while True:
-
-            print('Waiting for the connection ...')
-            soc, addr = self.socket.accept()
-            print('Connected by .. ', addr)
-            data_sum = ''
-
-            params = (soc, addr, data_sum)
-            executor.submit(self.__handle_message, params)
-
     # ユーザが指定した既知のCoreノードへの接続（ServerCore向け）
     def join_network(self, host, port):
         print('cm join_network')
         self.my_c_host = host
         self.my_c_port = port
         self.__connect_to_P2PNW(host, port)
-
-    def __connect_to_P2PNW(self, host, port):
-        print('cm def __connect_to_P2PNW')
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((host, port))
-        msg = self.mm.build(MSG_ADD, self.port)
-        s.sendall(msg.encode('utf-8'))
-        s.close()
 
     # 指定されたノードに対してメッセージを送信する
     def send_msg(self, peer, msg):
@@ -111,6 +85,31 @@ class ConnectionManager:
         msg = self.mm.build(MSG_REMOVE, self.port)
         self.send_msg((self.my_c_host, self.my_c_port), msg)
     
+    def __connect_to_P2PNW(self, host, port):
+        print('cm def __connect_to_P2PNW')
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((host, port))
+        msg = self.mm.build(MSG_ADD, self.port)
+        s.sendall(msg.encode('utf-8'))
+        s.close()
+
+     def __wait_for_access(self):
+        print('cm def __wait_for_access')
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.bind((self.host, self.port))
+        self.socket.listen(0)
+
+        executor = ThreadPoolExecutor(max_workers=10)
+
+        while True:
+
+            print('Waiting for the connection ...')
+            soc, addr = self.socket.accept()
+            print('Connected by .. ', addr)
+            data_sum = ''
+
+            params = (soc, addr, data_sum)
+            executor.submit(self.__handle_message, params)
 
     # 受信したメッセージを確認して、内容に応じた処理を行う。クラスの外からは利用しない想定
     def __handle_message(self, params):
