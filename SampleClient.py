@@ -17,7 +17,7 @@ def main():
     print('sc1 main')
     signal.signal(signal.SIGINT, signal_handler)
     global my_p2p_client
-    my_p2p_client = ClientCore(50095, '192.168.10.104', 50082)
+    my_p2p_client = ClientCore(50100, '192.168.10.104', 50082)
     my_p2p_client.start()
 
 
