@@ -1,0 +1,49 @@
+SampleServer2.py
+ def main
+  ServerCore(50090)
+
+server_core.py
+ def init
+  __get_myip()
+
+ def __get_myip
+
+  ConnectionManerger()
+
+connection_manager.py
+// cm init start
+ def init
+  CoreNodeList()
+
+core_node_list.py
+ def init
+  return ConnectionManerger
+
+connection_manager.py
+ __add_peer()
+
+ def __add_peer
+  core_node_set.add()
+
+core_node_list.py
+ def add
+  return ConnectionManerger
+
+connection_manager.py
+ MessageManager()
+
+message_manager.py
+ def init
+  return ConnectionManerger
+  
+connection_manager.py
+  return server_core
+// cm init end
+
+server_core.py
+ def start
+  ConnectionManerger start()
+
+connection_manager.py
+ def start
+  __wait_for_access
