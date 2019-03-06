@@ -10,11 +10,14 @@ class CoreNodeList:
         print('cnl def add')
         """
         Coreノードをリストに追加する。
+
+        param:
+        peer: Coreノードとして格納されるノードの接続情報（IPアドレスとポート番号）
         """
         with self.lock:
             print('Adding peer: ', peer)
             self.list.add((peer))
-            print('Current Core List:', self.list)
+            print('Current Core List: ', self.list)
 
     def remove(self, peer):
         print('cnl def remove')
@@ -43,6 +46,9 @@ class CoreNodeList:
         現在接続状態にあるPeerの一覧を返却する
         """
         return self.list
+
+    def get_length(self):
+        return len(self.list)
 
     def get_c_node_info(self):
         return list(self.list)[0]
