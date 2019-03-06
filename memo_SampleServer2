@@ -47,3 +47,37 @@ server_core.py
 connection_manager.py
  def start
   __wait_for_access
+
+ def __wait_for_access
+   // soc, addr = self.socket.accept()
+  return connection_manager start
+  
+connection_manager.py
+ def start
+  return server_core start
+
+server_core.py
+ def start 
+  return SampleServer2
+
+SampleServer2.py
+ def main
+  join_network()
+
+server_core.py
+ def join_network
+  join_network()
+
+connection_manager.py
+ def join_network
+  connection_P2PNW
+
+ def connection_P2PNW
+  message_manager build()
+
+message_manager.py
+ def build
+
+  __wait_for_access??
+
+

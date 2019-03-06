@@ -32,6 +32,10 @@ class ClientCore:
         print('cc get_my_current_start')
         return self.client_state
 
+    def send_massage_to_my_core_node(self, msg_type, msg):
+        msgtxt = self.cm.get_message_text(msg_type, msg)
+        self.cm.send_msg((self.my_core_host, self.my_core_port), msgtxt)
+
     def __get_myip(self):
         print('cc __get_myip')
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

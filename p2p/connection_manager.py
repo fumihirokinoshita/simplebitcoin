@@ -25,14 +25,16 @@ PING_INTERVAL = 1800 # 30分
 
 
 class ConnectionManager:
-    def __init__(self, host, my_port):
+    def __init__(self, host, my_port, callback):
         print('cm def __init__')
         print('Initializing ConnectionManager...')
         self.host = host
         self.port = my_port
         self.core_node_set = CoreNodeList()
+        self.edge_node_set = EdgeNodeList()
         self.__add_peer((host, my_port))
         self.mm = MessageManager()
+        self.callback = callback
 
     # 待受を開始する際に呼び出される (ServerCore向け)
     def start(self):
@@ -167,9 +169,10 @@ class ConnectionManager:
                 msg = self.mm.build(MSG_CORE_LIST, self.port, cl)
                 self.send_msg((addr[0], peer_port), msg)
             elif cmd == MSG_REMOVE_EDGE:
+                print('REMOVE_EDGE request was received!! from', addr[0], peer_port)
                 self.__remove_edge_node((addr[0], peer_port))
             else:
-                print('received unknown command', cmd)
+                self.callback(message, (addr[0], peer_port))
                 return
         elif status == ('ok', OK_WITH_PAYLOAD):
             if cmd == MSG_CORE_LIST:
@@ -180,9 +183,9 @@ class ConnectionManager:
                 print('Refresh the core node list...')
                 new_core_set = pickle.loads(payload.encode('utf-8'))
                 print('latest core node list:', new_core_set)
-                self.core_node_set = new_core_set
+                self.core_node_set.overwrite(new_core_set)
             else:
-                print('received unknown command', cmd)
+                self.callback(message, (addr[0], peer_port))
                 return
         else:
             print('Unexpected status', status)
@@ -228,7 +231,7 @@ class ConnectionManager:
         dead_c_node_set = list(filter(lambda p: not self.__is_alive(p), current_core_list))
         if dead_c_node_set:
             changed = True
-            print('Removing ', dead_c_node_set)
+            print('Removing peer ', dead_c_node_set)
             current_core_list = current_core_list - set(dead_c_node_set)
             self.core_node_set.overwrite(current_core_list)
 

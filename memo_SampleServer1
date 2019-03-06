@@ -11,7 +11,7 @@ server_core.py
   ConnectionManerger()
 
 connection_manager.py
-// cm init start
+/* cm init start
  def init
   CoreNodeList()
 
@@ -38,7 +38,7 @@ message_manager.py
   
 connection_manager.py
   return server_core
-// cm init end
+*/ cm init end
 
 server_core.py
  def start
@@ -49,9 +49,9 @@ connection_manager.py
   __wait_for_access
 
  def __wait_for_access
+// soc, addr = self.socket.accept()で待機
+//ここまでがSampleServer1.pyの立ち上げ。接続待機
   __handle_message
 
  def __handle_message
-
-//ここまでがSampleServer1.pyの立ち上げ。接続待機
 

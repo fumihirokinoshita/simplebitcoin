@@ -44,6 +44,26 @@ class ServerCore:
         print('sc def get_my_current_state')
         return self.server_state
 
+    def __handle_message(self, msg, peer=None):
+        print('sc __handle_message')
+        if peer != None:
+            # MSG_REQUEST_FULL_CHAIN
+            print('Send our latest blockchain for reply to : ', peer)
+        else:
+            if msg[2] == MSG_NEW_TRANSACTION:
+                # TODO: 新規transactionを登録する処理を呼び出す
+                pass
+            elif msg[2] == MSG_NEW_BLOCK:
+                # TODO: 新規ブロックを検証する処理を呼び出す
+            elif msg[2] == RSP_FULL_CHAIN:
+                # TODO: ブロックチェーン送信要求に応じて返却されたブロックチェーンを検証する処理を呼び出す
+                pass
+            elif msg[2] == MSG_HENHANCED:
+                # P2P Networkを単なるトランスポートして使っているアプリケーションが独自拡張したメッセージはここで処理する。
+                # SimpleBitcoinとしてはこの種別は使わない
+                self.mpmh.handle_message(msg[4])
+                pass
+
     def __get_myip(self):
         print('sc def __get_myip')
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

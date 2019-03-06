@@ -52,6 +52,10 @@ class ConnectionManager4Edge(object):
         """
         self.__connect_to_P2PNW(self.my_core_host, self.my_core_port)
 
+    def get_message_text(self, msg_type, payload = None):
+        msgtxt = self.mm.build(msg_type, self.port, payload)
+        return msgtxt
+
     def send_msg(self, peer, msg):
         print('4 def send_msg')
         """
