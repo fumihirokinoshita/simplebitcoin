@@ -44,10 +44,31 @@ class ServerCore:
         print('sc def get_my_current_state')
         return self.server_state
 
+    def __core_api(self, request, message):
+        """
+            MyProtocolMessageHandlerで呼び出すための拡張関数群
+        """
+        msg_type = MSG_ENHANCED
+
+        if request == 'send_message_to_all_peer':
+            new_message = self.cm.get_message_text(msg_type, message)
+            self.cm.send_msg_to_all_peer(new_message)
+            return 'ok'
+        elif request == 'send_message_to_all_edge':
+            new_message = self.cm.get_message_text(msg_type, message)
+            self.cm.send_msg_to_all_edge(new_message)
+            return 'ok'
+        elif request == 'api_type':
+            return 'server_core_api'
+
     def __handle_message(self, msg, peer=None):
         print('sc __handle_message')
+        """
+            ConnectionManagerに引き渡すコールバックの中身。
+        """
         if peer != None:
-            # MSG_REQUEST_FULL_CHAIN
+            # TODO: 現状はMSG_REQUEST_FULL_CHAIN　の時にしかこの処理は入らないけど、まだブロックチェーンを
+            # 作るところまで行ってないのでとりあえず口だけ作っておく
             print('Send our latest blockchain for reply to : ', peer)
         else:
             if msg[2] == MSG_NEW_TRANSACTION:
@@ -59,11 +80,17 @@ class ServerCore:
             elif msg[2] == RSP_FULL_CHAIN:
                 # TODO: ブロックチェーン送信要求に応じて返却されたブロックチェーンを検証する処理を呼び出す
                 pass
-            elif msg[2] == MSG_HENHANCED:
+            elif msg[2] == MSG_ENHANCED:
                 # P2P Networkを単なるトランスポートして使っているアプリケーションが独自拡張したメッセージはここで処理する。
                 # SimpleBitcoinとしてはこの種別は使わない
-                self.mpmh.handle_message(msg[4])
-                pass
+
+                # あらかじめ重複チェック
+                print('received enhanced message', msg[4])
+                current_messages = self.my_protocol_message_stone
+                has_same = False
+                if not msg[4] in current_messages:
+                    self.my_prottocol_message_store.append(msg[4])
+                    self.mpm.handle_message(msg[4], self.__core_api)
 
     def __get_myip(self):
         print('sc def __get_myip')
