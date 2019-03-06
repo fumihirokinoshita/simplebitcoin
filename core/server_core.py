@@ -55,6 +55,7 @@ class ServerCore:
                 pass
             elif msg[2] == MSG_NEW_BLOCK:
                 # TODO: 新規ブロックを検証する処理を呼び出す
+                pass
             elif msg[2] == RSP_FULL_CHAIN:
                 # TODO: ブロックチェーン送信要求に応じて返却されたブロックチェーンを検証する処理を呼び出す
                 pass

@@ -95,7 +95,7 @@ class ConnectionManager:
         s.sendall(msg.encode('utf-8'))
         s.close()
 
-     def __wait_for_access(self):
+    def __wait_for_access(self):
         print('cm def __wait_for_access')
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.bind((self.host, self.port))
