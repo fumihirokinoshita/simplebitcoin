@@ -1,7 +1,7 @@
 from distutils.version import StrictVersion
 import json
 
-PROTOCOL_NAME = 'simple-bitcoin_protocol'
+PROTOCOL_NAME = 'simple_bitcoin_protocol'
 MY_VERSION = '0.1.0'
 
 MSG_ADD = 0
@@ -30,6 +30,15 @@ class MessageManager:
 
     def build(self, msg_type, my_port=50082, payload=None):
         print('mm def build')
+        """
+        params:
+        msg_type: 規定のメッセージ種別
+        my_port: メッセージ送信者が受信用に待機させているServerSocketが使うポート番号
+        payload: メッセージに組み込みたいデータがある場合に指定する
+
+        return:
+        message: JSON形式に変換されたプロトコルメッセージ
+        """
 
         message = {
             'protocol': PROTOCOL_NAME,
@@ -47,6 +56,12 @@ class MessageManager:
         print('mm def parse')
         """
         プロトコルメッセージをパースして返却する
+
+        params
+        msg: JSON形式のプロトコルメッセージデータ
+        return:
+
+        結果（OK or NG）とパース結果の種別（ペイロードあり／なし）と送信元ポート番号およびペイロードのデータ
         """
         msg = json.loads(msg)
         msg_ver = StrictVersion(msg['version'])
@@ -61,7 +76,7 @@ class MessageManager:
             return ('error', ERR_VERSION_UNMATCH, None, None, None)
         elif cmd in (MSG_CORE_LIST, MSG_NEW_TRANSACTION, MSG_NEW_BLOCK, RSP_FULL_CHAIN, MSG_ENHANCED):
             result_type = OK_WITH_PAYLOAD
-            return ('ok', OK_WITH_PAYLOAD, cmd, my_port, payload)
+            return ('ok', result_type, cmd, my_port, payload)
         else:
             result_type = OK_WITHOUT_PAYLOAD
-            return ('ok', OK_WITHOUT_PAYLOAD, cmd, my_port, None)
+            return ('ok', result_type, cmd, my_port, None)
