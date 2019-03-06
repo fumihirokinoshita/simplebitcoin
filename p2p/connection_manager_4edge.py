@@ -1,10 +1,7 @@
 import socket
 import threading
 import pickle
-import signal
 import codecs
-import time
-import os
 from concurrent.futures import ThreadPoolExecutor
 
 from .core_node_list import CoreNodeList
@@ -16,15 +13,15 @@ from .message_manager import (
     ERR_PROTOCOL_UNMATCH,
     ERR_VERSION_UNMATCH,
     OK_WITH_PAYLOAD,
-    OK_WITHOUT_PAYLOAD
+    OK_WITHOUT_PAYLOAD,
 )
 
-# 動作確認用の値。本来は30分くらいが良いのでは
+# 動作確認用の値。本来は30分(1800)くらいが良いのでは
 PING_INTERVAL = 10
 
 
 class ConnectionManager4Edge(object):
-    def __init__(self, host, my_port, my_core_host, my_core_port):
+    def __init__(self, host, my_port, my_core_host, my_core_port, callback):
         print('4 def __init__')
         print('Initializing ConnectionManager4Edge...')
         self.host = host
@@ -33,6 +30,8 @@ class ConnectionManager4Edge(object):
         self.my_core_port = my_core_port
         self.core_node_set = CoreNodeList()
         self.mm = MessageManager()
+
+        self.callback = callback
 
     def start(self):
         print('4 def start')
@@ -54,6 +53,7 @@ class ConnectionManager4Edge(object):
 
     def get_message_text(self, msg_type, payload = None):
         msgtxt = self.mm.build(msg_type, self.port, payload)
+        print('generated_msg:', msgtxt)
         return msgtxt
 
     def send_msg(self, peer, msg):
@@ -63,7 +63,7 @@ class ConnectionManager4Edge(object):
         """
         print('Sending... ', msg)
         try:
-            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect((peer))
             s.sendall(msg.encode('utf-8'))
             s.close()
@@ -88,7 +88,7 @@ class ConnectionManager4Edge(object):
         """
         終了前の処理としてソケットを閉じる
         """
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((self.host, self.port))
         self.socket.close()
         s.close()
@@ -99,19 +99,19 @@ class ConnectionManager4Edge(object):
         """
         指定したCoreノードへ接続要求メッセージを送信する
         """
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((host, port))
         msg = self.mm.build(MSG_ADD_AS_EDGE, self.port)
         print(msg)
         s.sendall(msg.encode('utf-8'))
-        s.close
+        s.close()
 
     def __wait_for_access(self):
         print('4 def __wait_for_access')
         """
         Serverソケットを開いて待受状態に移行する
         """
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.bind((self.host, self.port))
         self.socket.listen(0)
 
@@ -160,20 +160,28 @@ class ConnectionManager4Edge(object):
             if cmd == MSG_PING:
                 pass
             else:
-                # 接続情報以外のメッセージしかEdgeノードで処理することは想定しない
-                print('Edge node does not have functions for thes message!')
+                # 接続情報以外のメッセージしかEdgeノードで処理することは想定していない
+                print('Edge node does not have functions for this message!')
+        elif status == ('ok', OK_WITH_PAYLOAD):
+            if cmd == MSG_CORE_LIST:
+                # Coreノードに依頼してCoreノードのリストを受け取る口だけはある
+                print('Referesh the core node list...')
+                new_core_set = pickle.loads(payload.encode('utf8'))
+                print('latest core node list: ', new_core_set)
+            else:
+                self.callback((result, reason, cmd, peer_port, payload))
         else:
             print('Unexpected status', status)
 
     def __send_ping(self):
         print('4 def __send_ping')
         """
-        接続状況確認メッセージの送信処理実態。中で確認処理は定期的に実行し続けられる。
+        生存確認メッセージの送信処理実体。中で確認処理は定期的に実行し続けられる
         """
         peer = (self.my_core_host, self.my_core_port)
 
         try:
-            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect((peer))
             msg = self.mm.build(MSG_PING)
             s.sendall(msg.encode('utf-8'))

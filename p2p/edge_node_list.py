@@ -28,6 +28,15 @@ class EdgeNodeList:
                 self.list.remove(edge)
                 print('Current Edge List: ', self.list)
 
+    def overwrite(self, new_list):
+        """
+        複数のEdgeノードの生存確認を行ったあとで一括での上書き処理をしたいような場合はこちら
+        """
+        with self.lock:
+            print('edge node list will be going to overwrite')
+            self.list = new_list
+            print('Current Edge List:', self.list)
+
     def get_list(self):
         print('enl def get_list')
         """
