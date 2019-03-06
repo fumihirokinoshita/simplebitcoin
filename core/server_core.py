@@ -1,6 +1,14 @@
 import socket
 
 from p2p.connection_manager import ConnectionManager
+from p2p.my_protocol_message_handler import MyProtocolMessageHandler
+from p2p.message_manager import(
+    MessageManager,
+    MSG_NEW_TRANSACTION,
+    MSG_NEW_BLOCK,
+    RSP_FULL_CHAIN,
+    MSG_ENHANCED,
+)
 
 STATE_INIT = 0
 STATE_STANDBY = 1
@@ -17,36 +25,45 @@ class ServerCore:
         print('Server IP address is set to ... ', self.my_ip)
         self.my_port = my_port
         self.cm = ConnectionManager(self.my_ip, self.my_port, self.__handle_message)
+        self.mpm = MyProtocolMessageHandler()
         self.core_node_host = core_node_host
         self.core_node_port = core_node_port
+        self.my_protocol_message_stone = []
 
     def start(self):
         print('sc def start')
+        # Coreノードとしての待受を開始する（上位UI層向け）
         self.server_state = STATE_STANDBY
         self.cm.start()
 
     def join_network(self):
         print('sc def join_network')
-        # ここの条件分岐は昨日していなかった。
+        # 事前に取得した情報に従い拠り所となる他のCoreノードに接続する（上位UI層向け）
+        # ここの条件分岐は機能していなかった。
         if self.core_node_host is not None:
             self.server_state = STATE_CONNECTED_TO_NETWORK
             self.cm.join_network(self.core_node_host, self.core_node_port)
         else:
-            print('This sever is running as Genesis Core Node...')
+            print('This server is running as Genesis Core Node...')
 
     def shutdown(self):
         print('sc def shutdown')
+        # 待ち受け状態のServer Socketを閉じて終了する（上位UI層向け）
         self.server_state = STATE_SHUTTING_DOWN
         print('Shutdown server...')
         self.cm.connection_close()
 
     def get_my_current_state(self):
         print('sc def get_my_current_state')
+        # 現在のCoreノードの状態を取得する（上位UI層向け。たぶん使う人いない）
         return self.server_state
 
     def __core_api(self, request, message):
         """
-            MyProtocolMessageHandlerで呼び出すための拡張関数群
+            MyProtocolMessageHandlerで呼び出すための拡張関数群（現状未整備）
+            params:
+            request: MyProtocolMessageHandlerから呼び出されるコマンドの種別
+            message: コマンド実行時に利用するために引き渡されるメッセージ
         """
         msg_type = MSG_ENHANCED
 
@@ -66,8 +83,8 @@ class ServerCore:
         """
             ConnectionManagerに引き渡すコールバックの中身。
         """
-        if peer != None:
-            # TODO: 現状はMSG_REQUEST_FULL_CHAIN　の時にしかこの処理は入らないけど、まだブロックチェーンを
+        if peer is not None:
+            # TODO: 現状はMSG_REQUEST_FULL_CHAINの時にしかこの処理に入らないけど、まだブロックチェーンを
             # 作るところまで行ってないのでとりあえず口だけ作っておく
             print('Send our latest blockchain for reply to : ', peer)
         else:
@@ -84,16 +101,17 @@ class ServerCore:
                 # P2P Networkを単なるトランスポートして使っているアプリケーションが独自拡張したメッセージはここで処理する。
                 # SimpleBitcoinとしてはこの種別は使わない
 
-                # あらかじめ重複チェック
+                # あらかじめ重複チェック（ポリシーによる。別にこの処理しなくてもいいかも）
                 print('received enhanced message', msg[4])
-                current_messages = self.my_protocol_message_stone
+                current_messages = self.my_protocol_message_store
                 has_same = False
                 if not msg[4] in current_messages:
-                    self.my_prottocol_message_store.append(msg[4])
+                    self.my_protocol_message_store.append(msg[4])
                     self.mpm.handle_message(msg[4], self.__core_api)
 
     def __get_myip(self):
         print('sc def __get_myip')
+        # Google先生から自分のIPアドレスを取得する。内部利用のみを想定
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(('8.8.8.8', 80))
         return s.getsockname()[0]

@@ -17,7 +17,7 @@ def shutdown_client():
 def main():
     signal.signal(signal.SIGINT, signal_handler)
     global my_p2p_client
-    my_p2p_client = ClientCore(50095, 192.168.10.104, 50082)
+    my_p2p_client = ClientCore(50095, '192.168.10.104', 50082)
     my_p2p_client.start()
 
     # Coreノードの登録前にメッセージを送ってしまわないようにちょっと待つ
