@@ -22,7 +22,6 @@ PING_INTERVAL = 10
 
 class ConnectionManager4Edge(object):
     def __init__(self, host, my_port, my_core_host, my_core_port, callback):
-        print('4 def __init__')
         print('Initializing ConnectionManager4Edge...')
         self.host = host
         self.port = my_port
@@ -34,7 +33,6 @@ class ConnectionManager4Edge(object):
         self.callback = callback
 
     def start(self):
-        print('4 def start')
         """
         最初の待受を開始する際に呼び出される（ClientCore向け）
         """
@@ -45,7 +43,6 @@ class ConnectionManager4Edge(object):
         self.ping_timer.start()
 
     def connect_to_core_node(self):
-        print('4 def connect_to_core_node')
         """
         ユーザが指定した既知のCoreノードへの接続（ClientCore向け）
         """
@@ -57,7 +54,6 @@ class ConnectionManager4Edge(object):
         return msgtxt
 
     def send_msg(self, peer, msg):
-        print('4 def send_msg')
         """
         指定されたノードに対してメッセージを送信する
         """
@@ -84,7 +80,6 @@ class ConnectionManager4Edge(object):
                 self.ping_timer.cancel()
 
     def connection_close(self):
-        print('4 def connection_close')
         """
         終了前の処理としてソケットを閉じる
         """
@@ -95,7 +90,6 @@ class ConnectionManager4Edge(object):
         self.ping_timer.cancel()
 
     def __connect_to_P2PNW(self, host, port):
-        print('4 def __connect_to_P2PNW')
         """
         指定したCoreノードへ接続要求メッセージを送信する
         """
@@ -107,7 +101,6 @@ class ConnectionManager4Edge(object):
         s.close()
 
     def __wait_for_access(self):
-        print('4 def __wait_for_access')
         """
         Serverソケットを開いて待受状態に移行する
         """
@@ -128,7 +121,6 @@ class ConnectionManager4Edge(object):
             executor.submit(self.__handle_message, params)
 
     def __handle_message(self, params):
-        print('4 def __handle_message')
         """
         受信したメッセージを確認して、内容に応じた処理を行う。
         クラスの外からは利用しない想定
@@ -174,7 +166,6 @@ class ConnectionManager4Edge(object):
             print('Unexpected status', status)
 
     def __send_ping(self):
-        print('4 def __send_ping')
         """
         生存確認メッセージの送信処理実体。中で確認処理は定期的に実行し続けられる
         """

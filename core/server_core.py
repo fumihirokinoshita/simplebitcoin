@@ -18,7 +18,6 @@ STATE_SHUTTING_DOWN = 3
 
 class ServerCore:
     def __init__(self, my_port=50082, core_node_host=None, core_node_port=None):
-        print('sc def __init__')
         self.server_state = STATE_INIT
         print('Initializing server...')
         self.my_ip = self.__get_myip()
@@ -31,13 +30,11 @@ class ServerCore:
         self.my_protocol_message_stone = []
 
     def start(self):
-        print('sc def start')
         # Coreノードとしての待受を開始する（上位UI層向け）
         self.server_state = STATE_STANDBY
         self.cm.start()
 
     def join_network(self):
-        print('sc def join_network')
         # 事前に取得した情報に従い拠り所となる他のCoreノードに接続する（上位UI層向け）
         # ここの条件分岐は機能していなかった。
         if self.core_node_host is not None:
@@ -47,14 +44,12 @@ class ServerCore:
             print('This server is running as Genesis Core Node...')
 
     def shutdown(self):
-        print('sc def shutdown')
         # 待ち受け状態のServer Socketを閉じて終了する（上位UI層向け）
         self.server_state = STATE_SHUTTING_DOWN
         print('Shutdown server...')
         self.cm.connection_close()
 
     def get_my_current_state(self):
-        print('sc def get_my_current_state')
         # 現在のCoreノードの状態を取得する（上位UI層向け。たぶん使う人いない）
         return self.server_state
 
@@ -79,7 +74,6 @@ class ServerCore:
             return 'server_core_api'
 
     def __handle_message(self, msg, peer=None):
-        print('sc __handle_message')
         """
             ConnectionManagerに引き渡すコールバックの中身。
         """
@@ -110,7 +104,6 @@ class ServerCore:
                     self.mpm.handle_message(msg[4], self.__core_api)
 
     def __get_myip(self):
-        print('sc def __get_myip')
         # Google先生から自分のIPアドレスを取得する。内部利用のみを想定
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(('8.8.8.8', 80))

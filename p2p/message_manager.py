@@ -25,11 +25,9 @@ OK_WITHOUT_PAYLOAD = 3
 
 class MessageManager:
     def __init__(self):
-        print('mm def __init__')
         print('Initializing MessageManager...')
 
     def build(self, msg_type, my_port=50082, payload=None):
-        print('mm def build')
         """
         params:
         msg_type: 規定のメッセージ種別
@@ -53,7 +51,6 @@ class MessageManager:
         return json.dumps(message)
 
     def parse(self, msg):
-        print('mm def parse')
         """
         プロトコルメッセージをパースして返却する
 

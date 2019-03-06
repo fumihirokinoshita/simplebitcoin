@@ -8,12 +8,10 @@ PASS_TO_CLIENT_APP = 'pass_message_to_client_application'
 # 独自に拡張したENHANCEDメッセージの処理や生成を担当する
 class MyProtocolMessageHandler:
     def __init__(self):
-        print('mpmh __init__')
         print('Initializing MyProtocolMessageHandler...')
 
     def handle_message(self, msg, api):
         #とりあえず受け取ったメッセージを自分がCoreノードならブロードキャスト、Edgeならコンソールに出力することでメッセっぽいものをデモ
-        print('mpmh handle_meaage')
         msg = json.loads(msg)
         
         my_api = api('api_type', None)

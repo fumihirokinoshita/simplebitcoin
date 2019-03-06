@@ -14,7 +14,6 @@ STATE_SHUTTING_DOWN = 2
 
 class ClientCore:
     def __init__(self, my_port=50082, c_host=None, c_port=None):
-        print('cc __init__')
         self.client_state = STATE_INIT
         print('Initializing ClientCore ...')
         self.my_ip = self.__get_myip()
@@ -27,19 +26,16 @@ class ClientCore:
         self.my_protocol_message_store = []
 
     def start(self):
-        print('cc start')
         self.client_state = STATE_ACTIVE
         self.cm.start()
         self.cm.connect_to_core_node()
 
     def shutdown(self):
-        print('cc shutdown')
         self.client_state = STATE_SHUTTING_DOWN
         print('Shutdown edge node ...')
         self.cm.connection_close()
 
     def get_my_current_state(self):
-        print('cc get_my_current_start')
         return self.client_state
 
     def send_message_to_my_core_node(self, msg_type, msg):
@@ -86,7 +82,6 @@ class ClientCore:
             self.mpm.handle_message(msg[4], self.__client_api)
 
     def __get_myip(self):
-        print('cc __get_myip')
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(('8.8.8.8', 80))
         return s.getsockname()[0]
