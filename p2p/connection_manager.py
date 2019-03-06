@@ -5,6 +5,7 @@ import codecs
 from concurrent.futures import ThreadPoolExecutor
 
 from .core_node_list import CoreNodeList
+from .edge_node_list import EdgeNodeList
 from .message_manager import (
     MessageManager,
     MSG_ADD,
