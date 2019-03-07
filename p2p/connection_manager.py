@@ -199,7 +199,8 @@ class ConnectionManager:
                 print('REMOVE_EDGE request was received!! from', addr[0], peer_port)
                 self.__remove_edge_node((addr[0], peer_port))
             else:
-                self.callback((result, reason, cmd, peer_port, payload), (addr[0], peer_port))
+                is_core = self.__is_in_core_set((addr[0], peer_port))
+                self.callback((result, reason, cmd, peer_port, payload),is_core (addr[0], peer_port))
                 return
         elif status == ('ok', OK_WITH_PAYLOAD):
             if cmd == MSG_CORE_LIST:
@@ -208,11 +209,12 @@ class ConnectionManager:
                 # 信頼できるノードの鍵とかをセットSとく必要があるかも
                 # この辺りの議論は第6章にて補足予定
                 print('Refresh the core node list...')
-                new_core_set = pickle.loads(payload.encode('utf-8'))
+                new_core_set = pickle.loads(payload.encode('utf8'))
                 print('latest core node list: ', new_core_set)
                 self.core_node_set.overwrite(new_core_set)
             else:
-                self.callback((result, reason, cmd, peer_port, payload), None)
+                is_core = self.__is_in_core_set((addr[0], peer_port))
+                self.callback((result, reason, cmd, peer_port, payload), is_core, None)
                 return
         else:
             print('Unexpected status', status)

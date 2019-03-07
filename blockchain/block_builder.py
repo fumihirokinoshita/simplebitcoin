@@ -1,5 +1,5 @@
-from .block import Block
 from .block import GenesisBlock
+from .block import Block
 
 class BlockBuilder:
     def __init__(self):

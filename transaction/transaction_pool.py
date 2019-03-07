@@ -12,11 +12,12 @@ class TransactionPool:
             self.transactions.append(transaction)
 
     def clear_my_transactions(self, index):
-        if index <= len(self.transactions):
-            new_transactions = self.transactions
-            del new_transactions[0:index]
-            print('transaction is now refreshed ... ', new_transactions)
-            self.transactions = new_transactions
+        with self.lock:
+            if index <= len(self.transactions):
+                new_transactions = self.transactions
+                del new_transactions[0:index]
+                print('transaction is now refreshed ... ', new_transactions)
+                self.transactions = new_transactions
 
     def get_stored_transactions(self):
         if len(self.transactions) > 0:

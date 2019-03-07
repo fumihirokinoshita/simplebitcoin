@@ -18,7 +18,7 @@ class BlockchainManager:
         with self.lock:
             self.chain.append(block)
 
-    def is_valid(self, chain):
+    def is_valid_chain(self, chain):
 
         last_block = chain[0]
         current_index = 1
