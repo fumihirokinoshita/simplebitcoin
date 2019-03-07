@@ -1,5 +1,6 @@
 import threading
 import time
+from time import sleep
 
 from blockchain.blockchain_manager import BlockchainManager
 from blockchain.block_builder import BlockBuilder
@@ -19,7 +20,9 @@ def generate_block_with_tp(tp, bb, bm, prev_block_hash):
     bm.set_new_block(new_block.to_dict())
     prev_block_hash = bm.get_hash(new_block.to_dict())
     # ブロック生成に成功したらTransaction Poolはクリアする
-    tp.clear_my_transactions()
+    index = len(result)
+    tp.clear_my_transactions(index)
+
     print('Current Blockchain is ... ', bm.chain)
     print('Current prev_block_hash is ... ', prev_block_hash)
 
@@ -47,7 +50,7 @@ def main():
 
     transaction2 = {
         'sender': 'test1',
-        'recipient': 'test2',
+        'recipient': 'test3',
         'value': 2
     }
 
@@ -55,6 +58,16 @@ def main():
 
     block_timer = threading.Timer(CHECK_INTERVAL, generate_block_with_tp, args=(tp, bb, bm, prev_block_hash))
     block_timer.start()
+
+    sleep(10) # TransactionPoolの周期的なチェックからタイミングをずらして追加する
+
+    transaction3 = {
+        'sender': 'test5',
+        'recipient': 'test6',
+        'value': 10
+    }
+
+    tp.set_new_transaction(transaction3)
 
 if __name__ == '__main__':
     main()
