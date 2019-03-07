@@ -133,6 +133,12 @@ class ConnectionManager:
             params = (soc, addr, data_sum)
             executor.submit(self.__handle_message, params)
 
+    def __is_in_core_set(self, peer):
+        """
+        与えられたnodeがCoreノードのリストに含まれているか？をチェックする
+        """
+        return self.core_node_set.has_this_peer(peer)
+
     # 受信したメッセージを確認して、内容に応じた処理を行う。クラスの外からは利用しない想定
     def __handle_message(self, params):
 

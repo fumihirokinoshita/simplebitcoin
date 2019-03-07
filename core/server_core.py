@@ -1,5 +1,9 @@
-import socket
+import time
+import socket, threading, json
 
+from blockchain.block_builder import BlockBuilder
+from blockchain.blockchain_manager import BlockchainManager
+from transaction.transaction_pool import TransactionPool
 from p2p.connection_manager import ConnectionManager
 from p2p.my_protocol_message_handler import MyProtocolMessageHandler
 from p2p.message_manager import(
@@ -15,6 +19,10 @@ STATE_STANDBY = 1
 STATE_CONNECTED_TO_NETWORK = 2
 STATE_SHUTTING_DOWN = 3
 
+# TransactionPoolの確認頻度
+# 動作チェックように数字小さくしてるけど、600(10分)くらいはあって良さそう
+CHECK_INTERVAL = 10
+
 
 class ServerCore:
     def __init__(self, my_port=50082, core_node_host=None, core_node_port=None):
@@ -28,6 +36,12 @@ class ServerCore:
         self.core_node_host = core_node_host
         self.core_node_port = core_node_port
         self.my_protocol_message_store = []
+        
+        self.bb = BlockBuilder()
+        my_genesis_block = self.bb.generate_genesis_block()
+        self.bm = BlockchainManager(my_genesis_block.to_dict())
+        self.prev_block_hash = self.bm.get_hash(my_genesis_block.to_dict())
+        self.tp = TransactionPool()
 
     def start(self):
         # Coreノードとしての待受を開始する（上位UI層向け）
@@ -52,6 +66,24 @@ class ServerCore:
     def get_my_current_state(self):
         # 現在のCoreノードの状態を取得する（上位UI層向け。たぶん使う人いない）
         return self.server_state
+
+    def __generate_block_with_tp(self):
+
+        result = self.tp.get_stored_transactions()
+        print('generate_block_with_tp called!')
+        if len(result) == 0:
+            print('Transaciton Pool is empty ...')
+        new_block = self.bb.generate_new_block(result, self.prev_block_hash)
+        self.bm.set_new_block(new_block.to_dict())
+        self.prev_block_hash = self.bm.get_hash(new_block.to_dict())
+        index = len(result)
+        self.tp.clear_my_transactions(index)
+
+        print('Current Blockchain is ... ', self.bm.chain)
+        print('Current prev_block_hash is ... ', self.prev_block_hash)
+
+        self.bb_timer = threading.Timer(CHECK_INTERVAL, self.__generate_block_with_tp)
+        self.bb_timer.start()
 
     def __core_api(self, request, message):
         """
@@ -83,7 +115,19 @@ class ServerCore:
             print('Send our latest blockchain for reply to : ', peer)
         else:
             if msg[2] == MSG_NEW_TRANSACTION:
-                # TODO: 新規transactionを登録する処理を呼び出す
+                # 新規transacitonを登録する処理を呼び出す
+                new_transaction = json.loads(msg[4])
+                print("received new_transaciton", new_transaction)
+                current_transactions = self.tp.get_stored_transactions()
+                if new_transaction in current_transactions:
+                    print("this is already pooled transaction:", t)
+                    return
+                if not is_core:
+                    self.tp.set_new_transaction(new_transaction)
+                    new_message = self.cm.get_message_text(MSG_NEW_BLOCK, json.dumps(new_block.to_dict()))
+                    self.cm.send_msg_to_all_peer(new_message)
+                else:
+                    self.tp.set_new_transaction(new_transaction)
                 pass
             elif msg[2] == MSG_NEW_BLOCK:
                 # TODO: 新規ブロックを検証する処理を呼び出す
