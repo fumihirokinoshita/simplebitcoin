@@ -206,7 +206,7 @@ class ConnectionManager:
                 print('latest core node list: ', new_core_set)
                 self.core_node_set.overwrite(new_core_set)
             else:
-                self.callback((result, reason, peer_port, payload), None)
+                self.callback((result, reason, cmd, peer_port, payload), None)
                 return
         else:
             print('Unexpected status', status)

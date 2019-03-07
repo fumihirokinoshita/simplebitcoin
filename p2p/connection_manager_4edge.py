@@ -157,9 +157,10 @@ class ConnectionManager4Edge(object):
         elif status == ('ok', OK_WITH_PAYLOAD):
             if cmd == MSG_CORE_LIST:
                 # Coreノードに依頼してCoreノードのリストを受け取る口だけはある
-                print('Referesh the core node list...')
+                print('Refresh the core node list...')
                 new_core_set = pickle.loads(payload.encode('utf8'))
                 print('latest core node list: ', new_core_set)
+                self.core_node_set.overwrite(new_core_set)
             else:
                 self.callback((result, reason, cmd, peer_port, payload))
         else:

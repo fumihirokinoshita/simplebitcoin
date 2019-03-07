@@ -43,7 +43,7 @@ class ClientCore:
         print(msg_txt)
         self.cm.send_msg((self.my_core_host, self.my_core_port), msg_txt)
 
-    def get_my_protocol_message(self):
+    def get_my_protocol_messages(self):
         """
         拡張されたメッセージとして送信されてきたメッセージを格納しているリストを取得する
         （現状未整備で特に意図した利用用途なし）

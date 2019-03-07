@@ -27,7 +27,7 @@ class ServerCore:
         self.mpm = MyProtocolMessageHandler()
         self.core_node_host = core_node_host
         self.core_node_port = core_node_port
-        self.my_protocol_message_stone = []
+        self.my_protocol_message_store = []
 
     def start(self):
         # Coreノードとしての待受を開始する（上位UI層向け）
