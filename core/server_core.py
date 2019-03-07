@@ -74,6 +74,10 @@ class ServerCore(object):
         new_block = self.bb.generate_new_block(result, self.prev_block_hash)
         self.bm.set_new_block(new_block.to_dict())
         self.prev_block_hash = self.bm.get_hash(new_block.to_dict())
+        # ここから
+        message_new_block = self.cm.get_message_text(MSG_NEW_BLOCK, new_block.to_dict())
+        self.cm.send_msg_to_all_peer(message_new_block)
+        # ここまで追加
         index = len(result)
         self.tp.clear_my_transactions(index)
 
