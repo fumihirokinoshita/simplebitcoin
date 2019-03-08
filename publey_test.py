@@ -1,7 +1,9 @@
 import Crypto
 import Crypto.Random
-import hashlib
+from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
+from Crypto.Signature import PKCS1_v1_5
+import binascii
 
 # RSAの鍵ペアを作成する
 def generate_rsa_key_pair():
@@ -12,37 +14,33 @@ def generate_rsa_key_pair():
 
     return public_key, private_key
 
+# 与えられた秘密鍵を使ってメッセージを署名する
+def compute_digital_signature(message, private_key):
+    # まずメッセージをハッシュ値に変換する
+    hashed_message = SHA256.new(message.encode('utf8'))
+    # 署名にはRSASSA-PKCKS1-v1_5を利用する
+    signer = PKCS1_v1_5.new(private_key)
+    return binascii.hexlify(signer.sign(hashed_message)).decode('ascii')
+
+def verify_signature(message, signature, pub_key):
+    hashed_message = SHA256.new(message.encode('utf8'))
+    verifier = PKCS1_v1_5.new(pub_key)
+    return verifier.verify(hashed_message, binascii.unhexlify(signature))
+
 def main():
 
     test_txt = "This is test message for getting understand about digital signature"
 
     pubkey, privkey = generate_rsa_key_pair()
 
-    hashed = hashlib.sha256(test_txt.encode('utf-8')).digest()
-    print("hashed :", hashed)
+    # デジタル署名を生成する
+    signed = compute_digital_signature(test_txt, privkey)
+    print('signed :', signed)
 
-    # 公開鍵で暗号化
-    encrypto = pubkey.encrypt(test_txt.encode('utf-8'), 0)
-    print("encrypto :", encrypto)
+    # デジタル署名を検証する
+    result = verify_signature(test_txt, signed, pubkey)
 
-    # 秘密鍵で複合
-    decrypto = privkey.decrypt(encrypto)
-    print('decrypto :', decrypto)
-
-    if test_txt == decrypto.decode('utf-8'):
-        print("test_txt and decrypto are same!")
-
-    # 秘密鍵で暗号化
-    enc_with_priv = privkey.encrypt(hashed, 0)[0]
-    print("enc_with_priv :", enc_with_priv)
-
-    # 公開鍵で復号
-    dec_with_pub = pubkey.decrypt(enc_with_priv)
-    print("dec_with_pub :", dec_with_pub)
-
-    if hashed == dec_with_pub:
-        print('hashed and dec_with_pub are same!')
-
+    print('result :', result)
 
 if __name__ == '__main__':
     main()
