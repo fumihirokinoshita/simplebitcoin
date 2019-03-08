@@ -20,11 +20,11 @@ class BlockchainManager:
         with self.lock:
             self.chain.append(block)
 
-    def renew_my_blockchain(self, blockchian):
+    def renew_my_blockchain(self, blockchain):
         # ブロックチェーン自体を更新し、それによって変更されるはずの最新のprev_block_hashを計算して返却する
         with self.lock:
-            if self.is_valid_chain(blockchian):
-                self.chain = blockchian
+            if self.is_valid_chain(blockchain):
+                self.chain = blockchain
                 latest_block = self.chain[-1]
                 return self.get_hash(latest_block)
             else:
@@ -36,10 +36,13 @@ class BlockchainManager:
             return self.chain
         else:
             return None
+    
+    def get_my_chain_length(self):
+        return len(self.chain)
 
     def get_transactions_from_orphan_blocks(self, orphan_blocks):
         current_index = 1
-        new_transactions = 0
+        new_transactions = []
 
         while current_index < len(orphan_blocks):
             block = orphan_blocks[current_index]
@@ -125,12 +128,12 @@ class BlockchainManager:
             digest = binascii.hexlify(self._get_double_sha256((message + nonce).encode('utf-8'))).decode('ascii')
             if digest.endswith(suffix):
                 print('OK, this seems valid block')
-                return
+                return True
             else:
                 print('Invalid block (bad nonce)')
                 print('nonce :', nonce)
                 print('digest :', digest)
-                print('suffix :', suffix)
+                print('suffix', suffix)
                 return False
 
     def is_valid_chain(self, chain):
@@ -152,5 +155,6 @@ class BlockchainManager:
         return hashlib.sha256(hashlib.sha256(message).digest()).digest()
 
     def get_hash(self, block):
+        print('BlockchainManager: get_hash was called!')
         block_string = json.dumps(block, sort_keys=True)
         return binascii.hexlify(self._get_double_sha256((block_string).encode('utf-8'))).decode('ascii')
