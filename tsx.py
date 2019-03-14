@@ -8,14 +8,14 @@ class TransactionInput:
 
     def to_dict(self):
         d = {
-            'transaction': self.transaction,
+            'transaction': self.transaction.to_dict(),
             'output_index': self.output_index
         }
         return d
 
 class TransactionOutput:
     """
-    トランザクションのなkでOutput（送金相手と送る金額）を管理する
+    トランザクションの中でOutput（送金相手と送る金額）を管理する
     """
     def __init__(self, recipient_address, value):
         self.recipient = recipient_address
@@ -46,9 +46,9 @@ class Transaction:
 
         return d
 
-    def is_enough_inputs(self, fee):
-        total_in = sum(i.transaction['inputs'][i.output_index]['value'] for i in self.inputs)
-        total_out = sum(int(o.value) for o in self.outputs) + int(fee)
+    def is_enough_inputs(self):
+        total_in = sum(i.transaction.outputs[i.output_index].value for i in self.inputs)
+        total_out = sum(o.value for o in self.outputs)
         delta = total_in - total_out
         if delta >= 0:
             return True
@@ -64,4 +64,9 @@ class CoinbaseTransaction(Transaction):
         self.outputs = [TransactionOutput(recipient_address, value)]
 
     def to_dict(self):
-        return super().to_dict()
+        d = {
+            'inputs': [],
+            'outputs': self.outputs,
+            'coinbase_transaction': True
+        }
+        return d
