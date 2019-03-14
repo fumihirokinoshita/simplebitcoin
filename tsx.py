@@ -46,6 +46,15 @@ class Transaction:
 
         return d
 
+    def is_enough_inputs(self, fee):
+        total_in = sum(i.transaction['inputs'][i.output_index]['value'] for i in self.inputs)
+        total_out = sum(int(o.value) for o in self.outputs) + int(fee)
+        delta = total_in - total_out
+        if delta >= 0:
+            return True
+        else:
+            return False
+
 class CoinbaseTransaction(Transaction):
     """
     Coinbase Transacitonは例外的にInputが存在しない。
