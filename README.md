@@ -10,13 +10,6 @@ $ git clone github.com/fumihirokinoshita/simplebitcoin
 # cd simplebitcoin
 ```
 
-## 仕様概要
-- SampleServer1.py : Core Node 1
-- SampleServer2.py : Core Node 2
-
-- SampleClient1.py : Edge Node 1
-- SampleClient2.py : Edge Node 2
-
 ## 動作確認
 
 Core Nodeの立ち上げとCore Node間での接続
