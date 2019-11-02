@@ -1,9 +1,6 @@
 # simplebitcoin
 自作ブロックチェーン
 
-参照
-https://peaks.cc/books/cryptocurrency
-
 ## 環境構築(Mac)
 ```
 $ git clone github.com/fumihirokinoshita/simplebitcoin
